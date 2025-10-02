@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'screens/retroalimentacion_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,37 +14,26 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-  home: const JudgeHomePage(),
+      home: const JudgeHomePage(),
     );
   }
 }
 
-
 // Nueva pantalla principal para el panel del juez/participante
-class JudgeHomePage extends StatelessWidget {
+class JudgeHomePage extends StatefulWidget {
   const JudgeHomePage({super.key});
 
   @override
+  State<JudgeHomePage> createState() => _JudgeHomePageState();
+}
+
+class _JudgeHomePageState extends State<JudgeHomePage> {
+  @override
   Widget build(BuildContext context) {
     // Datos de ejemplo
-    final String participant = 'Juan Pérez';
+    final String usuarios = 'Goslint Team';
     final int score = 120;
     final int submissions = 5;
     final int accepted = 2;
@@ -66,82 +56,126 @@ class JudgeHomePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            Text('Participante: $participant', style: Theme.of(context).textTheme.titleLarge),
+            Text('Equipo: $usuarios',
+                style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 16),
+            // Acordeón: al abrir una sección, las demás se cierran automáticamente
             Card(
-              child: ExpansionTile(
-                leading: const Icon(Icons.emoji_events, color: Colors.amber),
-                title: const Text('Puntaje'),
-                trailing: Text('$score'),
+              elevation: 2,
+              margin: EdgeInsets.zero,
+              child: ExpansionPanelList.radio(
+                expandedHeaderPadding: EdgeInsets.zero,
+                elevation: 0,
                 children: [
-                  ListTile(
-                    title: const Text('Ranking actual:'),
-                    subtitle: const Text('5to lugar general'),
+                  ExpansionPanelRadio(
+                    value: 'puntaje',
+                    headerBuilder: (context, isExpanded) => ListTile(
+                      leading:
+                          const Icon(Icons.emoji_events, color: Colors.amber),
+                      title: const Text('Puntaje'),
+                      trailing: Text('$score'),
+                    ),
+                    body: const Column(
+                      children: [
+                        ListTile(
+                          title: Text('Ranking actual:'),
+                          subtitle: Text('5to lugar general'),
+                        ),
+                        ListTile(
+                          title: Text('Puntos por problema:'),
+                          subtitle: Text('A: 50, B: 40, C: 30'),
+                        ),
+                      ],
+                    ),
+                    canTapOnHeader: true,
                   ),
-                  ListTile(
-                    title: const Text('Puntos por problema:'),
-                    subtitle: const Text('A: 50, B: 40, C: 30'),
+                  ExpansionPanelRadio(
+                    value: 'envios',
+                    headerBuilder: (context, isExpanded) => ListTile(
+                      leading: const Icon(Icons.send, color: Colors.blue),
+                      title: const Text('Envíos'),
+                      trailing: Text('$submissions'),
+                    ),
+                    body: const Column(
+                      children: [
+                        ListTile(
+                          title: Text('A - 12:01pm'),
+                          subtitle: Text('Accepted'),
+                        ),
+                        ListTile(
+                          title: Text('B - 12:10pm'),
+                          subtitle: Text('Wrong Answer'),
+                        ),
+                        ListTile(
+                          title: Text('C - 12:20pm'),
+                          subtitle: Text('Time Limit Exceeded'),
+                        ),
+                      ],
+                    ),
+                    canTapOnHeader: true,
+                  ),
+                  ExpansionPanelRadio(
+                    value: 'aceptados',
+                    headerBuilder: (context, isExpanded) => ListTile(
+                      leading:
+                          const Icon(Icons.check_circle, color: Colors.green),
+                      title: const Text('Aceptados'),
+                      trailing: Text('$accepted'),
+                    ),
+                    body: const Column(
+                      children: [
+                        ListTile(
+                          title: Text('A'),
+                          subtitle: Text('12:01pm'),
+                        ),
+                        ListTile(
+                          title: Text('C'),
+                          subtitle: Text('12:25pm'),
+                        ),
+                      ],
+                    ),
+                    canTapOnHeader: true,
+                  ),
+                  ExpansionPanelRadio(
+                    value: 'rechazados',
+                    headerBuilder: (context, isExpanded) => ListTile(
+                      leading: const Icon(Icons.cancel, color: Colors.red),
+                      title: const Text('Rechazados'),
+                      trailing: Text('$rejected'),
+                    ),
+                    body: const Column(
+                      children: [
+                        ListTile(
+                          title: Text('B'),
+                          subtitle: Text('Wrong Answer - 12:10pm'),
+                        ),
+                        ListTile(
+                          title: Text('C'),
+                          subtitle: Text('Time Limit Exceeded - 12:20pm'),
+                        ),
+                        ListTile(
+                          title: Text('C'),
+                          subtitle: Text('Runtime Error - 12:22pm'),
+                        ),
+                      ],
+                    ),
+                    canTapOnHeader: true,
                   ),
                 ],
               ),
             ),
-            Card(
-              child: ExpansionTile(
-                leading: const Icon(Icons.send, color: Colors.blue),
-                title: const Text('Envíos'),
-                trailing: Text('$submissions'),
-                children: [
-                  ListTile(
-                    title: const Text('A - 12:01pm'),
-                    subtitle: const Text('Accepted'),
-                  ),
-                  ListTile(
-                    title: const Text('B - 12:10pm'),
-                    subtitle: const Text('Wrong Answer'),
-                  ),
-                  ListTile(
-                    title: const Text('C - 12:20pm'),
-                    subtitle: const Text('Time Limit Exceeded'),
-                  ),
-                ],
-              ),
-            ),
-            Card(
-              child: ExpansionTile(
-                leading: const Icon(Icons.check_circle, color: Colors.green),
-                title: const Text('Aceptados'),
-                trailing: Text('$accepted'),
-                children: [
-                  ListTile(
-                    title: const Text('A'),
-                    subtitle: const Text('12:01pm'),
-                  ),
-                  ListTile(
-                    title: const Text('C'),
-                    subtitle: const Text('12:25pm'),
-                  ),
-                ],
-              ),
-            ),
-            Card(
-              child: ExpansionTile(
-                leading: const Icon(Icons.cancel, color: Colors.red),
-                title: const Text('Rechazados'),
-                trailing: Text('$rejected'),
-                children: [
-                  ListTile(
-                    title: const Text('B'),
-                    subtitle: const Text('Wrong Answer - 12:10pm'),
-                  ),
-                  ListTile(
-                    title: const Text('C'),
-                    subtitle: const Text('Time Limit Exceeded - 12:20pm'),
-                  ),
-                  ListTile(
-                    title: const Text('C'),
-                    subtitle: const Text('Runtime Error - 12:22pm'),
-                  ),
-                ],
+            const SizedBox(height: 16),
+            Center(
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const RetroalimentacionPage(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.chat_bubble_outline),
+                label: const Text('Retroalimentación'),
               ),
             ),
             const SizedBox(height: 24),
