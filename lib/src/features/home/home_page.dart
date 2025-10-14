@@ -84,13 +84,16 @@ class HomePage extends StatelessWidget {
                 runSpacing: 16,
                 alignment: WrapAlignment.center,
                 children: [
-                  _InfoCard(
-                    icon: Icons.send,
-                    label: 'Ejercicios enviados',
-                    value: sent.toString(),
-                    color: accentColor,
-                    cardColor: cardColor,
-                    iconSize: iconSize,
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).pushNamed('/sent'),
+                    child: _InfoCard(
+                      icon: Icons.send,
+                      label: 'Ejercicios enviados',
+                      value: sent.toString(),
+                      color: accentColor,
+                      cardColor: cardColor,
+                      iconSize: iconSize,
+                    ),
                   ),
                   _InfoCard(
                     icon: Icons.check_circle,
