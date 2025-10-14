@@ -1,62 +1,58 @@
 import 'package:flutter/material.dart';
-import 'register_page.dart';
 import '../../shared/services/auth_service.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
-  final AuthService _authService = AuthService(baseUrl: 'http://10.0.2.2:8080');
+class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _loading = false;
   String? _error;
+  final AuthService _authService = AuthService(baseUrl: 'http://10.0.2.2:8080');
 
-  void _login() async {
+  void _register() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() {
       _loading = true;
       _error = null;
     });
-    final email = _emailController.text.trim();
-    final result = await _authService.login(
-      email: email,
+    final errorMsg = await _authService.register(
+      nombre: _nameController.text.trim(),
+      emailContacto: _emailController.text.trim(),
       password: _passwordController.text.trim(),
     );
     setState(() {
       _loading = false;
-      _error = result is Map && result['error'] != null ? result['error'] : null;
+      _error = errorMsg;
     });
-    if (result is Map && result['nombre'] != null && mounted) {
-      Navigator.of(context).pushReplacementNamed(
-        '/welcome',
-        arguments: {'username': result['nombre']},
+    if (errorMsg == null && mounted) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Registro exitoso, ahora puedes iniciar sesión')),
       );
     }
   }
 
-  void _register() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const RegisterPage()),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final isDark = true;
-    final backgroundColor = Colors.black;
+    final accentColor = const Color(0xFF6C63FF);
     final cardColor = Colors.grey[900];
-    final accentColor = const Color(0xFF6C63FF); // Morado moderno
-    final logo = 'assets/images/logo_goslint.png'; // Logo blanco
-
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        elevation: 0,
+        title: const Text('Registro', style: TextStyle(color: Colors.white)),
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -71,8 +67,31 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Image.asset(logo, height: 80),
+                    Image.asset('assets/images/logo_goslint.png', height: 80),
                     const SizedBox(height: 32),
+                    TextFormField(
+                      controller: _nameController,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        labelText: 'Nombre o Equipo',
+                        labelStyle: const TextStyle(color: Colors.white70),
+                        prefixIcon: Icon(Icons.group, color: accentColor),
+                        filled: true,
+                        fillColor: Colors.grey[850],
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: accentColor),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Ingrese su nombre o equipo';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
                     TextFormField(
                       controller: _emailController,
                       style: const TextStyle(color: Colors.white),
@@ -137,36 +156,20 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 24),
                     if (_error != null)
                       Text(_error!, style: const TextStyle(color: Colors.red)),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: accentColor,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                            ),
-                            onPressed: _loading ? null : _login,
-                            child: _loading
-                                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                                : const Text('Iniciar sesión', style: TextStyle(fontSize: 16)),
-                          ),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: accentColor,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: accentColor,
-                              side: BorderSide(color: accentColor, width: 2),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                            ),
-                            onPressed: _loading ? null : _register,
-                            child: const Text('Registrarse', style: TextStyle(fontSize: 16)),
-                          ),
-                        ),
-                      ],
+                        onPressed: _loading ? null : _register,
+                        child: _loading
+                            ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                            : const Text('Registrarse', style: TextStyle(fontSize: 16)),
+                      ),
                     ),
                   ],
                 ),
@@ -178,4 +181,3 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
-
