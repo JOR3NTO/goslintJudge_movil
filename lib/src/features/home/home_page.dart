@@ -22,6 +22,56 @@ class HomePage extends StatelessWidget {
         title: const Text('Panel Principal', style: TextStyle(color: Colors.white)),
         centerTitle: true,
       ),
+      drawer: Drawer(
+        backgroundColor: Colors.grey[850],
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(color: Colors.grey[900]),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Image.asset('assets/images/logo_goslint.png', height: 48),
+                  const SizedBox(height: 8),
+                  const Text('Goslint Judge', style: TextStyle(color: Colors.white, fontSize: 18)),
+                ],
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.send, color: Colors.white),
+              title: const Text('Ejercicios enviados', style: TextStyle(color: Colors.white)),
+              onTap: () => Navigator.of(context).pushNamed('/sent'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.check_circle, color: Colors.white),
+              title: const Text('Aprobados', style: TextStyle(color: Colors.white)),
+              onTap: () => Navigator.of(context).pushNamed('/approved'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.cancel, color: Colors.white),
+              title: const Text('Rechazados', style: TextStyle(color: Colors.white)),
+              onTap: () => Navigator.of(context).pushNamed('/rejected'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.emoji_events, color: Colors.white),
+              title: const Text('Puntaje', style: TextStyle(color: Colors.white)),
+              onTap: () => Navigator.of(context).pushNamed('/score'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.psychology, color: Colors.white),
+              title: const Text('Retroalimentación IA', style: TextStyle(color: Colors.white)),
+              onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Próximamente: IA'))),
+            ),
+            const Divider(color: Colors.white24),
+            ListTile(
+              leading: const Icon(Icons.logout, color: Colors.white),
+              title: const Text('Cerrar sesión', style: TextStyle(color: Colors.white)),
+              onTap: () => Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false),
+            ),
+          ],
+        ),
+      ),
       body: Center(
         child: SingleChildScrollView(
           child: Column(
