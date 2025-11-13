@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'features/login/login_page.dart';
+import 'features/login/register_page.dart';
 import 'features/home/home_page.dart';
 import 'features/home/welcome_page.dart';
 import 'features/home/sent_page.dart';
@@ -20,6 +21,7 @@ class GoslintApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => const LoginPage(),
+        '/register': (context) => const RegisterPage(),
         '/welcome': (context) => const WelcomePage(),
         '/panel': (context) => const HomePage(),
         '/sent': (context) => const SentPage(),
