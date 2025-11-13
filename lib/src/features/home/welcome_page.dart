@@ -20,6 +20,8 @@ class _WelcomePageState extends State<WelcomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final username = args != null && args['username'] != null ? args['username'] : '';
     return Scaffold(
       backgroundColor: Colors.black,
       body: Center(
@@ -28,9 +30,9 @@ class _WelcomePageState extends State<WelcomePage> {
           children: [
             Image.asset('assets/images/logo_goslint.png', height: 100),
             const SizedBox(height: 32),
-            const Text(
-              '¡Bienvenido a Goslint Judge!',
-              style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold),
+            Text(
+              '¡Bienvenido $username!',
+              style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
           ],
