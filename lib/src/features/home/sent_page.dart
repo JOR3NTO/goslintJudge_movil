@@ -150,6 +150,21 @@ class SentPage extends StatelessWidget {
                   Text(statusText(s.estado), style: TextStyle(color: statusColor(s.estado), fontWeight: FontWeight.bold)),
                   if (s.puntaje > 0)
                     Text('+${s.puntaje}', style: TextStyle(color: Colors.greenAccent.shade400, fontWeight: FontWeight.bold)),
+                  const SizedBox(height:4),
+                  PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert, color: Colors.white70),
+                    onSelected: (v) {
+                      if (v == 'retro') {
+                        Navigator.of(context).pushNamed('/retro', arguments: {'envioId': int.tryParse(s.id) ?? 0});
+                      } else if (v == 'coach') {
+                        Navigator.of(context).pushNamed('/coach', arguments: {'maratonId': 1, 'equipoId': 1}); // TODO: ids reales
+                      }
+                    },
+                    itemBuilder: (c) => const [
+                      PopupMenuItem(value: 'retro', child: Text('Retro IA')),
+                      PopupMenuItem(value: 'coach', child: Text('Coach IA')),
+                    ],
+                  ),
                 ],
               ),
             ),

@@ -61,7 +61,12 @@ class HomePage extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.psychology, color: Colors.white),
               title: const Text('Retroalimentación IA', style: TextStyle(color: Colors.white)),
-              onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Próximamente: IA'))),
+              onTap: () => Navigator.of(context).pushNamed('/retro', arguments: {'envioId': 1}), // TODO: envioId real
+            ),
+            ListTile(
+              leading: const Icon(Icons.chat, color: Colors.white),
+              title: const Text('Coach IA (Chat)', style: TextStyle(color: Colors.white)),
+              onTap: () => Navigator.of(context).pushNamed('/coach', arguments: {'maratonId': 1, 'equipoId': 1}), // TODO: ids reales
             ),
             const Divider(color: Colors.white24),
             ListTile(
@@ -121,12 +126,21 @@ class HomePage extends StatelessWidget {
                   ),
                   _InfoCard(
                     icon: Icons.psychology,
-                    label: 'Ver retroalimentación IA',
+                    label: 'Retro IA',
                     value: '',
                     color: accentColor,
                     cardColor: cardColor,
                     iconSize: iconSize,
-                    isButton: true,
+                    onTap: () => Navigator.of(context).pushNamed('/retro', arguments: {'envioId': 1}),
+                  ),
+                  _InfoCard(
+                    icon: Icons.chat,
+                    label: 'Coach IA',
+                    value: '',
+                    color: accentColor,
+                    cardColor: cardColor,
+                    iconSize: iconSize,
+                    onTap: () => Navigator.of(context).pushNamed('/coach', arguments: {'maratonId': 1, 'equipoId': 1}),
                   ),
                 ],
               ),
@@ -145,7 +159,7 @@ class _InfoCard extends StatelessWidget {
   final Color color;
   final Color? cardColor;
   final double iconSize;
-  final bool isButton;
+  final VoidCallback? onTap;
 
   const _InfoCard({
     required this.icon,
@@ -154,7 +168,7 @@ class _InfoCard extends StatelessWidget {
     required this.color,
     this.cardColor,
     this.iconSize = 32,
-    this.isButton = false,
+    this.onTap,
   });
 
   @override
@@ -165,10 +179,7 @@ class _InfoCard extends StatelessWidget {
       elevation: 4,
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: isButton
-            ? () => ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Próximamente: retroalimentación IA')),)
-            : null,
+    onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
           child: Column(
