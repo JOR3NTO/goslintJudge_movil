@@ -16,7 +16,7 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _obscurePassword = true;
   bool _loading = false;
   String? _error;
-  final AuthService _authService = AuthService(baseUrl: 'http://10.0.2.2:8080');
+  final AuthService _authService = AuthService(baseUrl: 'http://149.130.167.81:8080');
 
   void _register() async {
     if (!_formKey.currentState!.validate()) return;
