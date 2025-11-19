@@ -11,6 +11,7 @@ import '../screens/retroalimentacion_page.dart';
 import '../screens/chat_coach_page.dart';
 import '../screens/resumen_maraton_page.dart';
 import 'core/backend_ids.dart';
+import 'core/theme_controller.dart';
 
 class GoslintApp extends StatelessWidget {
   const GoslintApp({super.key});
@@ -18,15 +19,21 @@ class GoslintApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ids = BackendIds();
-    return BackendIdsScope(
-      ids: ids,
-      child: MaterialApp(
-      title: 'Goslint Judge',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      initialRoute: '/',
-      routes: {
+    final themeController = ThemeModeController();
+    themeController.load(); // async load, initial might be dark until notify
+    return ThemeControllerScope(
+      controller: themeController,
+      child: BackendIdsScope(
+        ids: ids,
+        child: AnimatedBuilder(
+          animation: themeController,
+          builder: (context, _) => MaterialApp(
+            title: 'Goslint Judge',
+            theme: buildLightTheme(),
+            darkTheme: buildDarkTheme(),
+            themeMode: themeController.mode,
+            initialRoute: '/',
+            routes: {
         '/': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
         '/welcome': (context) => const WelcomePage(),
@@ -52,7 +59,9 @@ class GoslintApp extends StatelessWidget {
           final equipoId = args != null ? (args['equipoId'] as int? ?? 0) : 0;
           return ResumenMaratonPage(maratonId: maratonId, equipoId: equipoId);
         },
-      },
+            },
+          ),
+        ),
       ),
     );
   }

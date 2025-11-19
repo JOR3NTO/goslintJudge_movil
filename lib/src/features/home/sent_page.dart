@@ -1,91 +1,11 @@
 import 'package:flutter/material.dart';
 import 'models/submission.dart';
+import 'data/submissions_repository.dart';
 
 class SentPage extends StatelessWidget {
   const SentPage({super.key});
 
-  List<Submission> get submissions => [
-    Submission(
-      id: '1',
-      nombre: 'A - Suma de Pares',
-      estado: SubmissionStatus.aprobado,
-      fecha: DateTime.now().subtract(const Duration(minutes: 10)),
-      puntaje: 100,
-      lenguaje: 'Python',
-    ),
-    Submission(
-      id: '2',
-      nombre: 'B - Números Primos',
-      estado: SubmissionStatus.rechazado,
-      fecha: DateTime.now().subtract(const Duration(minutes: 30)),
-      puntaje: 0,
-      lenguaje: 'C++',
-    ),
-    Submission(
-      id: '3',
-      nombre: 'C - Ordenar Lista',
-      estado: SubmissionStatus.pendiente,
-      fecha: DateTime.now().subtract(const Duration(hours: 1)),
-      puntaje: 0,
-      lenguaje: 'Java',
-    ),
-    Submission(
-      id: '4',
-      nombre: 'D - Palíndromos',
-      estado: SubmissionStatus.aprobado,
-      fecha: DateTime.now().subtract(const Duration(hours: 2)),
-      puntaje: 80,
-      lenguaje: 'Python',
-    ),
-    Submission(
-      id: '5',
-      nombre: 'E - Caminos Mínimos',
-      estado: SubmissionStatus.rechazado,
-      fecha: DateTime.now().subtract(const Duration(hours: 3)),
-      puntaje: 0,
-      lenguaje: 'C++',
-    ),
-    Submission(
-      id: '6',
-      nombre: 'F - Anagramas',
-      estado: SubmissionStatus.aprobado,
-      fecha: DateTime.now().subtract(const Duration(hours: 4)),
-      puntaje: 90,
-      lenguaje: 'Java',
-    ),
-    Submission(
-      id: '7',
-      nombre: 'G - Árboles Binarios',
-      estado: SubmissionStatus.pendiente,
-      fecha: DateTime.now().subtract(const Duration(hours: 5)),
-      puntaje: 0,
-      lenguaje: 'Python',
-    ),
-    Submission(
-      id: '8',
-      nombre: 'H - Subcadenas',
-      estado: SubmissionStatus.rechazado,
-      fecha: DateTime.now().subtract(const Duration(hours: 6)),
-      puntaje: 0,
-      lenguaje: 'C++',
-    ),
-    Submission(
-      id: '9',
-      nombre: 'I - Matrices',
-      estado: SubmissionStatus.aprobado,
-      fecha: DateTime.now().subtract(const Duration(hours: 7)),
-      puntaje: 70,
-      lenguaje: 'Python',
-    ),
-    Submission(
-      id: '10',
-      nombre: 'J - Recursión',
-      estado: SubmissionStatus.pendiente,
-      fecha: DateTime.now().subtract(const Duration(hours: 8)),
-      puntaje: 0,
-      lenguaje: 'Java',
-    ),
-  ];
+  List<Submission> get submissions => SubmissionsRepository().all();
 
   Color statusColor(SubmissionStatus status) {
     switch (status) {
@@ -125,47 +45,64 @@ class SentPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Ejercicios enviados')),
       backgroundColor: Colors.black,
-      body: ListView.separated(
-        padding: const EdgeInsets.all(16),
+      body: ListView.builder(
+        padding: const EdgeInsets.fromLTRB(16,16,16,24),
         itemCount: submissions.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 12),
         itemBuilder: (context, i) {
           final s = submissions[i];
-          return Card(
-            color: Colors.grey[900],
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            child: ListTile(
-              leading: Icon(statusIcon(s.estado), color: statusColor(s.estado), size: 32),
-              title: Text(s.nombre, style: const TextStyle(color: Colors.white)),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Lenguaje: ${s.lenguaje}', style: const TextStyle(color: Colors.white70)),
-                  Text('Fecha: ${s.fecha.toLocal().toString().substring(0, 16)}', style: const TextStyle(color: Colors.white38, fontSize: 12)),
-                ],
-              ),
-              trailing: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(statusText(s.estado), style: TextStyle(color: statusColor(s.estado), fontWeight: FontWeight.bold)),
-                  if (s.puntaje > 0)
-                    Text('+${s.puntaje}', style: TextStyle(color: Colors.greenAccent.shade400, fontWeight: FontWeight.bold)),
-                  const SizedBox(height:4),
-                  PopupMenuButton<String>(
-                    icon: const Icon(Icons.more_vert, color: Colors.white70),
-                    onSelected: (v) {
-                      if (v == 'retro') {
-                        Navigator.of(context).pushNamed('/retro', arguments: {'envioId': int.tryParse(s.id) ?? 0});
-                      } else if (v == 'coach') {
-                        Navigator.of(context).pushNamed('/coach', arguments: {'maratonId': 1, 'equipoId': 1}); // TODO: ids reales
-                      }
-                    },
-                    itemBuilder: (c) => const [
-                      PopupMenuItem(value: 'retro', child: Text('Retro IA')),
-                      PopupMenuItem(value: 'coach', child: Text('Coach IA')),
-                    ],
-                  ),
-                ],
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 14),
+            child: Card(
+              color: Colors.grey[900],
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16,14,12,14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(statusIcon(s.estado), color: statusColor(s.estado), size: 32),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(s.nombre, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                              const SizedBox(height:4),
+                              Text('Lenguaje: ${s.lenguaje}', style: const TextStyle(color: Colors.white70)),
+                              Text('Fecha: ${s.fecha.toLocal().toString().substring(0,16)}', style: const TextStyle(color: Colors.white38, fontSize: 12)),
+                            ],
+                          ),
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(statusText(s.estado), style: TextStyle(color: statusColor(s.estado), fontWeight: FontWeight.bold)),
+                            if (s.puntaje > 0)
+                              Text('+${s.puntaje}', style: TextStyle(color: Colors.greenAccent.shade400, fontWeight: FontWeight.bold)),
+                            PopupMenuButton<String>(
+                              padding: EdgeInsets.zero,
+                              icon: const Icon(Icons.more_vert, color: Colors.white70),
+                              onSelected: (v) {
+                                if (v == 'retro') {
+                                  Navigator.of(context).pushNamed('/retro', arguments: {'envioId': int.tryParse(s.id) ?? 0});
+                                } else if (v == 'coach') {
+                                  Navigator.of(context).pushNamed('/coach', arguments: {'maratonId': 1, 'equipoId': 1});
+                                }
+                              },
+                              itemBuilder: (c) => const [
+                                PopupMenuItem(value: 'retro', child: Text('Retro IA')),
+                                PopupMenuItem(value: 'coach', child: Text('Coach IA')),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           );

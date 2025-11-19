@@ -6,7 +6,7 @@ import 'models.dart';
 class ApiService {
   ApiService({http.Client? client, String? baseUrl})
       : _client = client ?? http.Client(),
-        _base = (baseUrl ?? 'http://149.130.167.81');
+        _base = (baseUrl ?? 'https://unopressible-elia-wispily.ngrok-free.dev');
 
   final http.Client _client;
   final String _base;

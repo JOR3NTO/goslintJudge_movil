@@ -1,155 +1,186 @@
 import 'package:flutter/material.dart';
-// import '../../shared/services/judge_service.dart';
+import '../../shared/services/judge_service.dart';
+import '../../core/backend_ids.dart';
+import '../../core/theme_controller.dart';
+import '../../features/chat/backend_api.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final _judge = JudgeService(baseUrl: baseUrl); // reutilizamos baseUrl del BackendApi
+  bool _loadingStats = true;
+  String? _errorStats;
+  int _sent = 0, _approved = 0, _rejected = 0, _score = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarStats();
+  }
+
+  Future<void> _cargarStats() async {
+    setState(() { _loadingStats = true; _errorStats = null; });
+    try {
+      // Placeholder: hasta que haya userId real usamos 'demo'.
+      const userId = 'demo';
+      final sent = await _judge.getSentExercises(userId);
+      final approved = await _judge.getApprovedExercises(userId);
+      final rejected = await _judge.getRejectedExercises(userId);
+      final score = await _judge.getScore(userId);
+      if (mounted) {
+        setState(() { _sent = sent; _approved = approved; _rejected = rejected; _score = score; });
+      }
+    } catch (e) {
+      setState(() { _errorStats = 'No se pudieron cargar estadísticas'; });
+    } finally {
+      if (mounted) setState(() { _loadingStats = false; });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final accentColor = const Color(0xFF6C63FF);
-    final cardColor = Colors.grey[900];
-    final iconSize = 32.0;
-    // Valores de ejemplo
-    final sent = 12;
-    final approved = 8;
-    final rejected = 4;
-    final score = 120;
+    final cardColor = Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.15);
+    final iconSize = 30.0;
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 0,
-        title: const Text('Panel Principal', style: TextStyle(color: Colors.white)),
-        centerTitle: true,
+        title: const Text('Panel Principal'),
+        actions: [
+          IconButton(
+            tooltip: 'Actualizar',
+            onPressed: _loadingStats ? null : _cargarStats,
+            icon: _loadingStats ? const SizedBox(width:18,height:18,child:CircularProgressIndicator(strokeWidth:2)) : const Icon(Icons.refresh),
+          )
+        ],
       ),
-      drawer: Drawer(
-        backgroundColor: Colors.grey[850],
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(color: Colors.grey[900]),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Image.asset('assets/images/logo_goslint.png', height: 48),
-                  const SizedBox(height: 8),
-                  const Text('Goslint Judge', style: TextStyle(color: Colors.white, fontSize: 18)),
-                ],
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.send, color: Colors.white),
-              title: const Text('Ejercicios enviados', style: TextStyle(color: Colors.white)),
-              onTap: () => Navigator.of(context).pushNamed('/sent'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.check_circle, color: Colors.white),
-              title: const Text('Aprobados', style: TextStyle(color: Colors.white)),
-              onTap: () => Navigator.of(context).pushNamed('/approved'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.cancel, color: Colors.white),
-              title: const Text('Rechazados', style: TextStyle(color: Colors.white)),
-              onTap: () => Navigator.of(context).pushNamed('/rejected'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.emoji_events, color: Colors.white),
-              title: const Text('Puntaje', style: TextStyle(color: Colors.white)),
-              onTap: () => Navigator.of(context).pushNamed('/score'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.psychology, color: Colors.white),
-              title: const Text('Retroalimentación IA', style: TextStyle(color: Colors.white)),
-              onTap: () => Navigator.of(context).pushNamed('/retro', arguments: {'envioId': 1}), // TODO: envioId real
-            ),
-            ListTile(
-              leading: const Icon(Icons.chat, color: Colors.white),
-              title: const Text('Coach IA (Chat)', style: TextStyle(color: Colors.white)),
-              onTap: () => Navigator.of(context).pushNamed('/coach', arguments: {'maratonId': 1, 'equipoId': 1}), // TODO: ids reales
-            ),
-            const Divider(color: Colors.white24),
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.white),
-              title: const Text('Cerrar sesión', style: TextStyle(color: Colors.white)),
-              onTap: () => Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false),
-            ),
-          ],
-        ),
-      ),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset('assets/images/logo_goslint.png', height: 80),
-              const SizedBox(height: 24),
-              Wrap(
-                spacing: 16,
-                runSpacing: 16,
-                alignment: WrapAlignment.center,
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pushNamed('/sent'),
-                    child: _InfoCard(
-                      icon: Icons.send,
-                      label: 'Ejercicios enviados',
-                      value: sent.toString(),
-                      color: accentColor,
-                      cardColor: cardColor,
-                      iconSize: iconSize,
+      drawer: _buildDrawer(context, accentColor),
+      body: RefreshIndicator(
+        onRefresh: _cargarStats,
+        child: LayoutBuilder(
+          builder: (ctx, constraints) {
+            final isWide = constraints.maxWidth > 600;
+            final crossAxisCount = isWide ? 3 : 2;
+            final items = [
+              _InfoCardData(Icons.send, 'Enviados', _sent.toString(), () => Navigator.pushNamed(context, '/sent')),
+              _InfoCardData(Icons.check_circle, 'Aprobados', _approved.toString(), () => Navigator.pushNamed(context, '/approved')),
+              _InfoCardData(Icons.cancel, 'Rechazados', _rejected.toString(), () => Navigator.pushNamed(context, '/rejected')),
+              _InfoCardData(Icons.emoji_events, 'Puntaje', _score.toString(), () => Navigator.pushNamed(context, '/score')),
+              _InfoCardData(Icons.psychology, 'Retro IA', '', () => Navigator.pushNamed(context, '/retro', arguments: {'envioId': 1})),
+              _InfoCardData(Icons.chat, 'Coach IA', '', () => Navigator.pushNamed(context, '/coach', arguments: {'maratonId': 1, 'equipoId': 1})),
+            ];
+            return CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.all(16),
+                  sliver: SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Image.asset('assets/images/logo_goslint.png', height: 60),
+                            const SizedBox(width: 12),
+                            Text('Bienvenido', style: Theme.of(context).textTheme.titleLarge),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        if (_errorStats != null)
+                          MaterialBanner(
+                            content: Text(_errorStats!),
+                            actions: [TextButton(onPressed: _cargarStats, child: const Text('Reintentar'))],
+                          ),
+                      ],
                     ),
                   ),
-                  _InfoCard(
-                    icon: Icons.check_circle,
-                    label: 'Aprobados',
-                    value: approved.toString(),
-                    color: Colors.greenAccent.shade400,
-                    cardColor: cardColor,
-                    iconSize: iconSize,
+                ),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  sliver: SliverGrid(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
+                      childAspectRatio: 1.15,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (c, i) {
+                        final data = items[i];
+                        return _InfoCard(
+                          icon: data.icon,
+                          label: data.label,
+                          value: _loadingStats && data.value.isNotEmpty ? '...' : data.value,
+                          color: accentColor,
+                          cardColor: cardColor,
+                          iconSize: iconSize,
+                          onTap: data.onTap,
+                        );
+                      },
+                      childCount: items.length,
+                    ),
                   ),
-                  _InfoCard(
-                    icon: Icons.cancel,
-                    label: 'Rechazados',
-                    value: rejected.toString(),
-                    color: Colors.redAccent.shade200,
-                    cardColor: cardColor,
-                    iconSize: iconSize,
-                  ),
-                  _InfoCard(
-                    icon: Icons.emoji_events,
-                    label: 'Puntaje',
-                    value: score.toString(),
-                    color: Colors.amber,
-                    cardColor: cardColor,
-                    iconSize: iconSize,
-                  ),
-                  _InfoCard(
-                    icon: Icons.psychology,
-                    label: 'Retro IA',
-                    value: '',
-                    color: accentColor,
-                    cardColor: cardColor,
-                    iconSize: iconSize,
-                    onTap: () => Navigator.of(context).pushNamed('/retro', arguments: {'envioId': 1}),
-                  ),
-                  _InfoCard(
-                    icon: Icons.chat,
-                    label: 'Coach IA',
-                    value: '',
-                    color: accentColor,
-                    cardColor: cardColor,
-                    iconSize: iconSize,
-                    onTap: () => Navigator.of(context).pushNamed('/coach', arguments: {'maratonId': 1, 'equipoId': 1}),
-                  ),
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
   }
+
+  Drawer _buildDrawer(BuildContext context, Color accentColor) {
+    final ids = BackendIdsScope.of(context);
+    final themeCtl = ThemeControllerScope.of(context);
+    return Drawer(
+      child: Column(
+        children: [
+          DrawerHeader(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Image.asset('assets/images/logo_goslint.png', height: 56),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Goslint Judge', style: Theme.of(context).textTheme.titleMedium),
+                      Text(ids.isReady ? 'Maratón: ${ids.maratonId}  Equipo: ${ids.equipoId}' : 'IDs no listos', style: Theme.of(context).textTheme.bodySmall),
+                    ],
+                  ),
+                )
+              ],
+            ),
+          ),
+          ListTile(leading: const Icon(Icons.dashboard), title: const Text('Panel'), onTap: () => Navigator.pop(context)),
+          const Divider(),
+          ListTile(leading: const Icon(Icons.send), title: const Text('Enviados'), onTap: () => Navigator.pushNamed(context, '/sent')),
+          ListTile(leading: const Icon(Icons.check_circle), title: const Text('Aprobados'), onTap: () => Navigator.pushNamed(context, '/approved')),
+          ListTile(leading: const Icon(Icons.cancel), title: const Text('Rechazados'), onTap: () => Navigator.pushNamed(context, '/rejected')),
+          ListTile(leading: const Icon(Icons.emoji_events), title: const Text('Puntaje'), onTap: () => Navigator.pushNamed(context, '/score')),
+          ListTile(leading: const Icon(Icons.psychology), title: const Text('Retro IA'), onTap: () => Navigator.pushNamed(context, '/retro', arguments: {'envioId': 1})),
+          ListTile(leading: const Icon(Icons.chat), title: const Text('Coach IA'), onTap: () => Navigator.pushNamed(context, '/coach', arguments: {'maratonId': ids.maratonId ?? 1, 'equipoId': ids.equipoId ?? 1})),
+          SwitchListTile(
+            title: Text(themeCtl.isDark ? 'Tema oscuro' : 'Tema claro'),
+            secondary: const Icon(Icons.brightness_6),
+            value: themeCtl.isDark,
+            onChanged: (_) => themeCtl.toggle(),
+          ),
+          const Spacer(),
+          ListTile(leading: const Icon(Icons.logout), title: const Text('Cerrar sesión'), onTap: () => Navigator.pushNamedAndRemoveUntil(context, '/', (r) => false)),
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoCardData {
+  final IconData icon; final String label; final String value; final VoidCallback onTap;
+  _InfoCardData(this.icon, this.label, this.value, this.onTap);
 }
 
 class _InfoCard extends StatelessWidget {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// Bubble for a single user (or AI) message without structured bullets.
 class ChatBubble extends StatelessWidget {
   final bool isAi;
   final String text;
@@ -8,20 +9,24 @@ class ChatBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = isAi
-        ? Colors.grey.shade200
-        : Theme.of(context).colorScheme.primary.withOpacity(0.15);
+    final cs = Theme.of(context).colorScheme;
+    // Distinct backgrounds that adapt to light/dark themes.
+    final background = isAi ? cs.surfaceContainerHighest : cs.primaryContainer;
+    final textColor = isAi ? cs.onSurface : cs.onPrimaryContainer;
     final align = isAi ? CrossAxisAlignment.start : CrossAxisAlignment.end;
     return Column(
       crossAxisAlignment: align,
       children: [
         Container(
           decoration: BoxDecoration(
-            color: bg,
-            borderRadius: BorderRadius.circular(12),
+            color: background,
+            borderRadius: BorderRadius.circular(14),
           ),
-          padding: const EdgeInsets.all(12),
-          child: Text(text),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: Text(
+            text,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: textColor),
+          ),
         ),
       ],
     );

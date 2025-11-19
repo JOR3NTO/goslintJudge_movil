@@ -6,7 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../feedback/models.dart'; // ChatTurn, ResumenMaraton, FeedbackItem, Retroalimentacion
 
 // BASE_URL: cambiar aquí si se mueve el backend.
-const String baseUrl = 'http://149.130.167.81:8080';
+// Base URL central del backend (actualizado a ngrok HTTPS)
+const String baseUrl = 'https://unopressible-elia-wispily.ngrok-free.dev';
 
 class BackendException implements Exception {
   final String message;
@@ -112,8 +113,20 @@ class BackendApi {
   }
 
   Future<ChatTurn> sendChatMessage(int maratonId, int equipoId, String mensaje) async {
-    final uri = Uri.parse('$baseUrl/api/chat/maraton/$maratonId/equipo/$equipoId');
-    final res = await _safePost(uri, body: {'mensaje': mensaje});
+    // Algunos despliegues requieren GET con query ?mensaje=... en lugar de POST con body.
+    final getUri = Uri.parse('$baseUrl/api/chat/maraton/$maratonId/equipo/$equipoId')
+        .replace(queryParameters: {'mensaje': mensaje});
+    try {
+      final getRes = await _safeGet(getUri);
+      if (_isOk(getRes.statusCode)) {
+        final data = jsonDecode(getRes.body) as Map<String, dynamic>;
+        return ChatTurn.fromJson(data);
+      }
+    } catch (_) {
+      // Ignorar y probar POST
+    }
+    final postUri = Uri.parse('$baseUrl/api/chat/maraton/$maratonId/equipo/$equipoId');
+    final res = await _safePost(postUri, body: {'mensaje': mensaje});
     _throwIfHttpError(res, notFoundMsg: 'ID no encontrado');
     final data = jsonDecode(res.body) as Map<String, dynamic>;
     return ChatTurn.fromJson(data);

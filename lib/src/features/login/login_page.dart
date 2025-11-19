@@ -10,7 +10,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final AuthService _authService = AuthService(baseUrl: 'http://149.130.167.81:8080');
+  final AuthService _authService = AuthService(baseUrl: 'https://unopressible-elia-wispily.ngrok-free.dev');
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();

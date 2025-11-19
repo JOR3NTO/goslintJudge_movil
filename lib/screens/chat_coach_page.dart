@@ -246,31 +246,34 @@ class _IaResponseBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final lines = text.split('\n').where((l) => l.trim().isNotEmpty).toList();
+    // Detect heading markers for stronger emphasis.
+    bool isHeading(String l) => RegExp(r'^(Resumen|Sugerencias|Próximo paso|Proximo paso)', caseSensitive: false).hasMatch(l);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(12),
+        color: cs.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(14),
       ),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (final l in lines)
+          for (final raw in lines)
             Padding(
-              padding: const EdgeInsets.only(bottom: 4),
+              padding: const EdgeInsets.only(bottom: 6),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('• '),
+                  Text('•', style: TextStyle(color: cs.onSurface, fontSize: 14)),
+                  const SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      l.replaceFirst(RegExp(r'^[-*]\s*'), ''),
-                      style: TextStyle(
-                        fontWeight: (l.startsWith('- Resumen') || l.startsWith('- Próximo') || l.startsWith('- Proximo'))
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                      ),
+                      raw.replaceFirst(RegExp(r'^[-*]\s*'), '').trim(),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: cs.onSurface,
+                            fontWeight: isHeading(raw) ? FontWeight.w600 : FontWeight.normal,
+                          ),
                     ),
                   ),
                 ],
